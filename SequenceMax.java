@@ -1,6 +1,6 @@
 import java.util.Random;
 
-public class Tri {
+public class SequenceMax {
     
     public static int somme (int tab[]){
         /*int max = 0;
