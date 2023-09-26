@@ -27,8 +27,31 @@ public class SequenceMax {
         } 
         }*/
 
+        int s, maxG, maxD;
+        s=maxD=0;
+        s = 0;
 
-        return max;
+        for(int i = tab.length/2+1; i <tab.length ; i++){
+            s += tab[i];
+            if(s>maxD)
+                maxD=s;
+            
+        }
+        s=maxG=0;
+          for(int i = tab.length/2+1; i >= 0 ; i--){
+            s = s+ tab[i];
+            if(s>maxG)
+                maxG=s;
+            
+        }
+        s=maxG+maxD;
+        /*if(s>Math.max(resultG, resultD)){
+            return s;
+        }
+        else return(Math.max(resultG, resultD))
+        */
+        
+        return s;
     }
     public static void main(String[] args){
         //int[] tab= new int[4];

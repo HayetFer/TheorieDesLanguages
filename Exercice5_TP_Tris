@@ -1,0 +1,7 @@
+Pour une compléxité O (n)²
+pour quelque chose de 10 fois plus grand =
+(10n)² = 100 fois plus long
+
+t=NbInscructions/(nbInscrution/sec)
+Pour meilleur :
+t=NbInscructions/(10*nbInscrution/sec)
