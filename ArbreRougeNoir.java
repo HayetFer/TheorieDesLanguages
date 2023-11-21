@@ -143,49 +143,53 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 	}
 	
 
-	public void ajouterCorrection(Noeud NoeudAjout) {
-		Noeud y;
-		Noeud x;
-		while (NoeudAjout.pere.couleur == Couleur.Rouge) {
-			if (NoeudAjout.pere == NoeudAjout.pere.pere.gauche) {
-				y = NoeudAjout.pere.droit;
+	public void ajouterCorrection(Noeud z) {
+		while (z.pere.couleur == Couleur.Rouge) {
+			if (z.pere == z.pere.pere.gauche) {
+				Noeud y = z.pere.pere.droit; // Uncle of z
 				if (y.couleur == Couleur.Rouge) {
-					NoeudAjout.pere.couleur = Couleur.Noir;
+					// Case 1
+					z.pere.couleur = Couleur.Noir;
 					y.couleur = Couleur.Noir;
-					NoeudAjout.pere.pere.couleur = Couleur.Rouge;
-					NoeudAjout = NoeudAjout.pere.pere;
+					z.pere.pere.couleur = Couleur.Rouge;
+					z = z.pere.pere;
 				} else {
-					if (NoeudAjout == NoeudAjout.pere.droit) {
-						NoeudAjout = NoeudAjout.pere;
-						rotationGauche(NoeudAjout);
+					if (z == z.pere.droit) {
+						// Case 2
+						z = z.pere;
+						rotationGauche(z);
 					}
-
-					NoeudAjout.pere.couleur = Couleur.Noir;
-					NoeudAjout.pere.pere.couleur = Couleur.Rouge;
-					rotationDroite(NoeudAjout);
+					// Case 3
+					z.pere.couleur = Couleur.Noir;
+					z.pere.pere.couleur = Couleur.Rouge;
+					rotationDroite(z.pere.pere);
 				}
 			} else {
-				y = NoeudAjout.pere.pere.gauche; // Cas 1'
+				// Mirror image of the above cases for the right side
+				Noeud y = z.pere.pere.gauche; // Uncle of z for the right side
 				if (y.couleur == Couleur.Rouge) {
-					NoeudAjout.pere.couleur = Couleur.Noir;
+					// Case 1'
+					z.pere.couleur = Couleur.Noir;
 					y.couleur = Couleur.Noir;
-					NoeudAjout.pere.pere.couleur = Couleur.Rouge;
-					NoeudAjout = NoeudAjout.pere.pere;
+					z.pere.pere.couleur = Couleur.Rouge;
+					z = z.pere.pere;
 				} else {
-					// Cas 2' et 3'
-					if (NoeudAjout == NoeudAjout.pere.gauche) {
-						NoeudAjout = NoeudAjout.pere;
-						rotationDroite(NoeudAjout);
+					if (z == z.pere.gauche) {
+						// Case 2'
+						z = z.pere;
+						rotationDroite(z);
 					}
-
-					NoeudAjout.pere.couleur = Couleur.Noir;
-					NoeudAjout.pere.pere.couleur = Couleur.Rouge;
-					rotationGauche(NoeudAjout.pere.pere); // Cas 3'
+					// Case 3'
+					z.pere.couleur = Couleur.Noir;
+					z.pere.pere.couleur = Couleur.Rouge;
+					rotationGauche(z.pere.pere);
 				}
 			}
 		}
+		// Adjust root color after corrections
 		racine.couleur = Couleur.Noir;
 	}
+	
 	private void rotationDroite(Noeud x) {
         Noeud y = x.gauche;
         x.gauche = y.droit;
