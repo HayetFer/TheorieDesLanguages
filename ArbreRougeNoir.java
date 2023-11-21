@@ -110,39 +110,38 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 	
 	public ArbreRougeNoir(Collection<? extends E> c) {
 		racine=sentinelle;
+		cmp = (e1, e2) -> ((Comparable<E>) e1).compareTo(e2);
 		Iterator<? extends E> iterator = c.iterator();
 		while (iterator.hasNext()) {
 			this.add(iterator.next());
 		}
 	}
 
-	public boolean ajout(Noeud NoeudAjout) {
-		System.out.println(NoeudAjout.cle.toString() + "HELLO");
-		Noeud Temporaire1 = sentinelle;
-		Noeud Temporaire2 = racine;
-		cmp = (e1, e2) -> ((Comparable<E>) e1).compareTo(e2);
-		while (Temporaire2 != sentinelle) {
-			Temporaire1 = Temporaire2;
-			int res = cmp.compare(NoeudAjout.cle, Temporaire2.cle);
-			Temporaire2 = res < 0 ? Temporaire2.gauche : Temporaire2.droit;
+	public boolean ajout(Noeud z) {
+		Noeud y = sentinelle;
+		Noeud x = racine;
+		
+		while (x != sentinelle) {
+			y = x;
+			x = cmp.compare(z.cle, x.cle) < 0 ? x.gauche : x.droit;
 		}
-		NoeudAjout.pere = Temporaire1;
-		if (Temporaire1 == sentinelle) {
-			// Arbre Vide
-			racine = NoeudAjout;
+	
+		z.pere = y;
+		if (y == sentinelle) { // Tree is empty
+			racine = z;
 		} else {
-			int res = cmp.compare(NoeudAjout.cle, Temporaire1.cle);
-			if (res < 0) {
-				Temporaire1.gauche = NoeudAjout;
-			} else {
-				Temporaire1.droit = NoeudAjout;
-			}
-			NoeudAjout.gauche = NoeudAjout.droit = sentinelle;
-			NoeudAjout.couleur = Couleur.Rouge;
-			ajouterCorrection(NoeudAjout);
+			if (cmp.compare(z.cle, y.cle) < 0)
+				y.gauche = z;
+			else
+				y.droit = z;
 		}
+	
+		z.gauche = z.droit = sentinelle;
+		z.couleur = Couleur.Rouge;
+		ajouterCorrection(z);
 		return true;
 	}
+	
 
 	public void ajouterCorrection(Noeud NoeudAjout) {
 		Noeud y;
@@ -235,6 +234,7 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		toString(racine, buf, "", maxStrLen(racine));
 		return buf.toString();
 	}
+	
 
 	private void toString(Noeud x, StringBuffer buf, String path, int len) {
 		if (x == null)
@@ -277,13 +277,13 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		collection.add(1);
 		collection.add(6);
 		collection.add(3);
-		collection.add(5);
+		//collection.add(5);
 		collection.add(7);
 
 		// Create an ArbreRougeNoir using the collection
 		ArbreRougeNoir<Integer> ArbreRougeNoir = new ArbreRougeNoir<>(collection);
 
-		//System.out.println(ArbreRougeNoir.toString());
+		System.out.println(ArbreRougeNoir.toString());
 		// ArbreRougeNoir<Integer>.Noeud test = ArbreRougeNoir.new Noeud(5);
 		// ArbreRougeNoir.supprimer(test);
 		// System.out.println(ArbreRougeNoir.racine.minimum().cle.toString());
