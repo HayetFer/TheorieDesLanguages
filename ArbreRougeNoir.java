@@ -103,15 +103,25 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 	 */
 	public ArbreRougeNoir(Comparator<? super E> cmp) {
 		sentinelle.couleur = Couleur.Noir;
-		cmp = (e1, e2) -> ((Comparable<E>) e1).compareTo(e2);
+		this.cmp = cmp;
 		racine = null;
 		this.taille = 0;
 	}
+	
+	public ArbreRougeNoir(Collection<? extends E> c) {
+		racine=sentinelle;
+		Iterator<? extends E> iterator = c.iterator();
+		while (iterator.hasNext()) {
+			this.add(iterator.next());
+		}
+	}
 
 	public boolean ajout(Noeud NoeudAjout) {
+		System.out.println(NoeudAjout.cle.toString() + "HELLO");
 		Noeud Temporaire1 = sentinelle;
 		Noeud Temporaire2 = racine;
-		while (Temporaire1 != null) {
+		cmp = (e1, e2) -> ((Comparable<E>) e1).compareTo(e2);
+		while (Temporaire2 != sentinelle) {
 			Temporaire1 = Temporaire2;
 			int res = cmp.compare(NoeudAjout.cle, Temporaire2.cle);
 			Temporaire2 = res < 0 ? Temporaire2.gauche : Temporaire2.droit;
@@ -177,13 +187,46 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		}
 		racine.couleur = Couleur.Noir;
 	}
+	private void rotationDroite(Noeud x) {
+        Noeud y = x.gauche;
+        x.gauche = y.droit;
+        if (y.droit != null) {
+            y.droit.pere = x;
+        }
+        y.pere = x.pere;
+        if (x.pere == null) {
+            racine = y;
+        } else if (x == x.pere.droit) {
+            x.pere.droit = y;
+        } else {
+            x.pere.gauche = y;
+        }
+        y.droit = x;
+        x.pere = y;
+    }
 
-
-	public ArbreRougeNoir(Collection<? extends E> c) {
-		Iterator<? extends E> iterator = c.iterator();
-		while (iterator.hasNext()) {
-			this.add(iterator.next());
-		}
+    private void rotationGauche(Noeud x) {
+        Noeud y = x.droit;
+        x.droit = y.gauche;
+        if (y.gauche != null) {
+            y.gauche.pere = x;
+        }
+        y.pere = x.pere;
+        if (x.pere == null) {
+            racine = y;
+        } else if (x == x.pere.gauche) {
+            x.pere.gauche = y;
+        } else {
+            x.pere.droit = y;
+        }
+        y.gauche = x;
+        x.pere = y;
+    }
+	public boolean add(E element) {
+		Noeud newNode = new Noeud(element);
+		System.out.println(newNode.cle.toString());
+		ajout(newNode);
+		return true;
 	}
 
 	@Override
@@ -223,41 +266,6 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 				: Math.max(x.cle.toString().length(),
 						Math.max(maxStrLen(x.gauche), maxStrLen(x.droit)));
 	}
-	private void rotationDroite(Noeud x) {
-        Noeud y = x.gauche;
-        x.gauche = y.droit;
-        if (y.droit != null) {
-            y.droit.pere = x;
-        }
-        y.pere = x.pere;
-        if (x.pere == null) {
-            racine = y;
-        } else if (x == x.pere.droit) {
-            x.pere.droit = y;
-        } else {
-            x.pere.gauche = y;
-        }
-        y.droit = x;
-        x.pere = y;
-    }
-
-    private void rotationGauche(Noeud x) {
-        Noeud y = x.droit;
-        x.droit = y.gauche;
-        if (y.gauche != null) {
-            y.gauche.pere = x;
-        }
-        y.pere = x.pere;
-        if (x.pere == null) {
-            racine = y;
-        } else if (x == x.pere.gauche) {
-            x.pere.gauche = y;
-        } else {
-            x.pere.droit = y;
-        }
-        y.gauche = x;
-        x.pere = y;
-    }
 
 	// TODO : voir quelles autres méthodes il faut surcharger
 	public static void main(String[] args) {
@@ -275,7 +283,7 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		// Create an ArbreRougeNoir using the collection
 		ArbreRougeNoir<Integer> ArbreRougeNoir = new ArbreRougeNoir<>(collection);
 
-		System.out.println(ArbreRougeNoir.toString());
+		//System.out.println(ArbreRougeNoir.toString());
 		// ArbreRougeNoir<Integer>.Noeud test = ArbreRougeNoir.new Noeud(5);
 		// ArbreRougeNoir.supprimer(test);
 		// System.out.println(ArbreRougeNoir.racine.minimum().cle.toString());
