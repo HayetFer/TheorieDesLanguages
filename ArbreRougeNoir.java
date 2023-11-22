@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
 /**
  * <p>
  * Implantation de l'interface Collection basée sur les arbres binaires de
- * recherche. Les éléments sont ordonnés soit en utilisant l'ordre naturel (cf
+ *  erche. Les éléments sont ordonnés soit en utilisant l'ordre naturel (cf
  * Comparable) soit avec un Comparator fourni à la création.
  * </p>
  * 
@@ -141,7 +141,6 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		ajouterCorrection(z);
 		return true;
 	}
-	
 
 	public void ajouterCorrection(Noeud z) {
 		while (z.pere.couleur == Couleur.Rouge) {
@@ -193,11 +192,11 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 	private void rotationDroite(Noeud x) {
         Noeud y = x.gauche;
         x.gauche = y.droit;
-        if (y.droit != null) {
+        if (y.droit != null || y.droit != sentinelle) {
             y.droit.pere = x;
         }
         y.pere = x.pere;
-        if (x.pere == null) {
+        if (x.pere == null || x.pere == sentinelle) {
             racine = y;
         } else if (x == x.pere.droit) {
             x.pere.droit = y;
@@ -210,66 +209,49 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 
     private void rotationGauche(Noeud x) {
         Noeud y = x.droit;
-        x.droit = y.gauche;
-        if (y.gauche != null) {
-            y.gauche.pere = x;
-        }
-        y.pere = x.pere;
-        if (x.pere == null) {
-            racine = y;
-        } else if (x == x.pere.gauche) {
-            x.pere.gauche = y;
-        } else {
-            x.pere.droit = y;
-        }
-        y.gauche = x;
-        x.pere = y;
+		x.droit = y.gauche;
+		if(y.gauche!=null || y.gauche != sentinelle){
+			y.gauche.pere = x;
+		}
+		y.pere = x.pere;
+		if(x.pere == null || x.pere == sentinelle){
+			racine=y;
+		}
+		else if (x==x.pere.gauche){
+			x.pere.gauche=y;
+		}
+		else {
+			x.pere.gauche=y;
+		}
+		y.gauche=x;
+		y.pere=y;
     }
 	public boolean add(E element) {
 		Noeud newNode = new Noeud(element);
-		System.out.println(newNode.cle.toString());
 		ajout(newNode);
 		return true;
 	}
-
-	@Override
-	public String toString() {
-		StringBuffer buf = new StringBuffer();
-		toString(racine, buf, "", maxStrLen(racine));
-		return buf.toString();
-	}
 	
+	@Override
+public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (racine != null) {
+        printTree(racine, "", true, sb);
+    }
+    return sb.toString();
+}
 
-	private void toString(Noeud x, StringBuffer buf, String path, int len) {
-		if (x == null)
-			return;
-		toString(x.droit, buf, path + "D", len);
-		for (int i = 0; i < path.length(); i++) {
-			for (int j = 0; j < len + 6; j++)
-				buf.append(' ');
-			char c = ' ';
-			if (i == path.length() - 1)
-				c = '+';
-			else if (path.charAt(i) != path.charAt(i + 1))
-				c = '|';
-			buf.append(c);
-		}
-		buf.append("-- " + x.cle.toString());
-		if (x.gauche != null || x.droit != null) {
-			buf.append(" --");
-			for (int j = x.cle.toString().length(); j < len; j++)
-				buf.append('-');
-			buf.append('|');
-		}
-		buf.append("\n");
-		toString(x.gauche, buf, path + "G", len);
-	}
+private void printTree(Noeud node, String prefix, boolean isLeft, StringBuilder sb) {
+    if (node != null) {
+        sb.append(prefix);
+        sb.append(isLeft ? "├──" : "└──");
+        sb.append(node.cle).append(" ").append(node.couleur).append("\n");
 
-	private int maxStrLen(Noeud x) {
-		return x == null ? 0
-				: Math.max(x.cle.toString().length(),
-						Math.max(maxStrLen(x.gauche), maxStrLen(x.droit)));
-	}
+        printTree(node.gauche, prefix + (isLeft ? "│   " : "    "), true, sb);
+        printTree(node.droit, prefix + (isLeft ? "│   " : "    "), false, sb);
+    }
+}
+
 
 	// TODO : voir quelles autres méthodes il faut surcharger
 	public static void main(String[] args) {
