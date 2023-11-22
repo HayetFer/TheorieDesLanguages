@@ -35,8 +35,8 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 
 		Noeud(E cle) {
 			this.cle = cle;
-			gauche = null;
-			droit = null;
+			gauche = sentinelle;
+			droit = sentinelle;
 		}
 
 		/**
@@ -48,7 +48,7 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		 */
 		Noeud minimum() {
 			Noeud actuel = this;
-			while (actuel.gauche != null) {
+			while (actuel.gauche != sentinelle ) {
 				actuel = actuel.gauche;
 			}
 
@@ -63,7 +63,7 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		 *         grande clé
 		 */
 		Noeud suivant() {
-			if (droit != null) {
+			if (droit != sentinelle) {
 				return droit.minimum(); // Si le nœud a un sous-arbre droit, le successeur sera le nœud avec la clé
 										// minimale de ce sous-arbre droit.
 			} else {
@@ -71,7 +71,7 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 				Noeud pereActuel = pere;
 
 				// Tant que le nœud est le fils droit de son parent, on remonte dans l'arbre
-				while (pereActuel != null && actuel == pereActuel.droit) {
+				while (pereActuel != sentinelle && actuel == pereActuel.droit) {
 					actuel = pereActuel;
 					pereActuel = pereActuel.pere;
 				}
@@ -90,7 +90,7 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 	 */
 	public ArbreRougeNoir() {
 		sentinelle.couleur = Couleur.Noir;
-		racine = null;
+		racine = sentinelle;
 		this.taille = 0;
 	}
 
@@ -104,11 +104,12 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 	public ArbreRougeNoir(Comparator<? super E> cmp) {
 		sentinelle.couleur = Couleur.Noir;
 		this.cmp = cmp;
-		racine = null;
+		racine = sentinelle;
 		this.taille = 0;
 	}
 	
 	public ArbreRougeNoir(Collection<? extends E> c) {
+		sentinelle.couleur=Couleur.Noir;
 		racine=sentinelle;
 		cmp = (e1, e2) -> ((Comparable<E>) e1).compareTo(e2);
 		Iterator<? extends E> iterator = c.iterator();
@@ -142,107 +143,101 @@ public class ArbreRougeNoir<E> extends AbstractCollection<E> {
 		return true;
 	}
 
-	public void ajouterCorrection(Noeud z) {
+	private void ajouterCorrection(Noeud z) {
 		while (z.pere.couleur == Couleur.Rouge) {
 			if (z.pere == z.pere.pere.gauche) {
-				Noeud y = z.pere.pere.droit; // Uncle of z
+				Noeud y = z.pere.pere.droit; // l'oncle de z
 				if (y.couleur == Couleur.Rouge) {
-					// Case 1
+					// cas 1
 					z.pere.couleur = Couleur.Noir;
 					y.couleur = Couleur.Noir;
 					z.pere.pere.couleur = Couleur.Rouge;
 					z = z.pere.pere;
 				} else {
 					if (z == z.pere.droit) {
-						// Case 2
+						// cas 2
 						z = z.pere;
 						rotationGauche(z);
 					}
-					// Case 3
+					// cas 3
 					z.pere.couleur = Couleur.Noir;
 					z.pere.pere.couleur = Couleur.Rouge;
 					rotationDroite(z.pere.pere);
 				}
 			} else {
-				// Mirror image of the above cases for the right side
-				Noeud y = z.pere.pere.gauche; // Uncle of z for the right side
-				if (y.couleur == Couleur.Rouge) {
-					// Case 1'
+				Noeud y=z.pere.pere.gauche;
+				if(y.couleur == Couleur.Rouge){
 					z.pere.couleur = Couleur.Noir;
 					y.couleur = Couleur.Noir;
 					z.pere.pere.couleur = Couleur.Rouge;
-					z = z.pere.pere;
-				} else {
-					if (z == z.pere.gauche) {
-						// Case 2'
+					z=z.pere.pere;
+				}
+				else{
+					if(z == z.pere.gauche){
 						z = z.pere;
 						rotationDroite(z);
 					}
-					// Case 3'
 					z.pere.couleur = Couleur.Noir;
 					z.pere.pere.couleur = Couleur.Rouge;
 					rotationGauche(z.pere.pere);
 				}
 			}
 		}
-		// Adjust root color after corrections
-		racine.couleur = Couleur.Noir;
+		racine.couleur = Couleur.Noir; // Property (2)
 	}
 	
+	
 	private void rotationDroite(Noeud x) {
-        Noeud y = x.gauche;
-        x.gauche = y.droit;
-        if (y.droit != null || y.droit != sentinelle) {
-            y.droit.pere = x;
-        }
-        y.pere = x.pere;
-        if (x.pere == null || x.pere == sentinelle) {
-            racine = y;
-        } else if (x == x.pere.droit) {
-            x.pere.droit = y;
-        } else {
-            x.pere.gauche = y;
-        }
-        y.droit = x;
-        x.pere = y;
-    }
-
-    private void rotationGauche(Noeud x) {
-        Noeud y = x.droit;
+		Noeud y = x.gauche;
+		x.gauche = y.droit;
+		if (y.droit != null && y.droit != sentinelle) { // Use '&&' instead of '||' for conditions
+			y.droit.pere = x;
+		}
+		y.pere = x.pere;
+		if (x.pere == null || x.pere == sentinelle) {
+			racine = y;
+		} else if (x == x.pere.droit) {
+			x.pere.droit = y;
+		} else {
+			x.pere.gauche = y;
+		}
+		y.droit = x;
+		x.pere = y;
+	}
+	
+	private void rotationGauche(Noeud x) {
+		Noeud y = x.droit;
 		x.droit = y.gauche;
-		if(y.gauche!=null || y.gauche != sentinelle){
+		if (y.gauche != null && y.gauche != sentinelle) { // Use '&&' instead of '||' for conditions
 			y.gauche.pere = x;
 		}
 		y.pere = x.pere;
-		if(x.pere == null || x.pere == sentinelle){
-			racine=y;
+		if (x.pere == null || x.pere == sentinelle) {
+			racine = y;
+		} else if (x == x.pere.gauche) {
+			x.pere.gauche = y;
+		} else {
+			x.pere.droit = y;
 		}
-		else if (x==x.pere.gauche){
-			x.pere.gauche=y;
-		}
-		else {
-			x.pere.gauche=y;
-		}
-		y.gauche=x;
-		y.pere=y;
-    }
+		y.gauche = x;
+		x.pere = y;
+	}
 	public boolean add(E element) {
 		Noeud newNode = new Noeud(element);
 		ajout(newNode);
 		return true;
 	}
-	
 	@Override
 public String toString() {
     StringBuilder sb = new StringBuilder();
-    if (racine != null) {
+    if (racine != sentinelle) {
         printTree(racine, "", true, sb);
     }
     return sb.toString();
 }
 
 private void printTree(Noeud node, String prefix, boolean isLeft, StringBuilder sb) {
-    if (node != null) {
+    if (node != null ) {
         sb.append(prefix);
         sb.append(isLeft ? "├──" : "└──");
         sb.append(node.cle).append(" ").append(node.couleur).append("\n");
@@ -263,7 +258,8 @@ private void printTree(Noeud node, String prefix, boolean isLeft, StringBuilder 
 		collection.add(1);
 		collection.add(6);
 		collection.add(3);
-		//collection.add(5);
+		collection.add(15);
+		collection.add(26);
 		collection.add(7);
 
 		// Create an ArbreRougeNoir using the collection
