@@ -114,59 +114,35 @@ public class ABR<E> extends AbstractCollection<E> {
 	 */ 
 	public ABR(Collection<? extends E> c) {
         Iterator<? extends E> iterator = c.iterator();
+		cmp = (e1,e2)->((Comparable<E>)e1).compareTo(e2);
 		while(iterator.hasNext()){
             this.add(iterator.next());
         }
 	}
-    public boolean add(E elt) {
-        if (racine == null) {
-            racine = new Noeud(elt);
-            taille = 1;
-            return true;
-        }
-		cmp = (e1, e2) -> ((Comparable<E>) e1).compareTo(e2);
-        Noeud actuel = racine;
-        int res;
-        while (actuel.gauche != null || actuel.droit != null) {
-            res = cmp.compare(elt, actuel.cle);   
-            if (res == 0) {
-                return false;
-            }
-    
-            if (res < 0) {
-                if (actuel.gauche == null) {
-                    actuel.gauche = new Noeud(elt);
-                    actuel.gauche.pere=actuel;
-                    return true;
-                }
-                actuel = actuel.gauche;
-            } else {
-                if (actuel.droit == null) {
-                    actuel.droit = new Noeud(elt);
-                    actuel.droit.pere=actuel;
-                    return true;
-                }
-                actuel = actuel.droit;
-            }
-        }
-        res = cmp.compare(elt, actuel.cle);
-         if (res < 0) {
-                if (actuel.gauche == null) {
-                    actuel.gauche = new Noeud(elt);
-					actuel.gauche.pere=actuel;
-              }
-        }
-		else if((res > 0)) {
-                if (actuel.droit == null) {
-                    actuel.droit = new Noeud(elt);
-					actuel.droit.pere=actuel;
-                    return true;
-                }
-            }
-
-    
-        return true;
-    }
+	public boolean add(E elt) {
+		Noeud y = null;
+		Noeud x = racine;
+		Noeud z = new Noeud(elt);
+		while (x != null) {
+			y = x;
+			int compareResult = cmp.compare(elt, x.cle);
+			x = compareResult < 0 ? x.gauche : x.droit;
+		}
+		z.pere = y;
+		if (y == null) { // arbre vide
+			racine = z;
+		} else {
+			int compareResult = cmp.compare(elt, y.cle);
+			if (compareResult < 0)
+				y.gauche = z;
+			else
+				y.droit = z;
+		}
+		z.gauche = z.droit = null;
+		taille++;
+		return true;
+	}
+	
 	@Override
 	public Iterator<E> iterator() {
 		return new ABRIterator();
@@ -230,59 +206,36 @@ public class ABR<E> extends AbstractCollection<E> {
 	 *         {@link Iterator#remove()}
 	 */
 	private Noeud supprimer(Noeud z) {
-        z = rechercher(z.cle);
-		if(z==racine){
-			if(z.gauche==null && z.droit == null){
-				Noeud Temp=racine.suivant();
-				racine = null;
-				return Temp;
-        	}
-			else if(z.gauche==null && z.droit != null){
-				z.droit.pere=z.droit;
-				racine=z.droit;
-			}
-        	else if(z.gauche!=null && z.droit == null){
-				z.gauche.pere=z.gauche;
-				racine=z.gauche;
-			}
+		z = rechercher(z.cle);
+		Noeud y;
+		if (z.gauche == null || z.droit == null)
+			y = z;
+		else
+			y = z.suivant();
+		
+		Noeud x;
+		if (y.gauche != null)
+			x = y.gauche;
+		else
+			x = y.droit;
+		
+		if (x != null) 
+			x.pere = y.pere;
+		
+		if (y.pere == null) { // suppression de la racine
+			racine = x;
+		} else {
+			if (y == y.pere.gauche)
+				y.pere.gauche = x;
+			else
+				y.pere.droit = x;
 		}
-		if(z.gauche==null && z.droit == null){
-            Noeud Temp = z.pere;
-			boolean compareResult = cmp.compare(Temp.cle, z.cle) < 0;
-			if (compareResult) {
-				z.pere.droit=null;
-			} else {
-				Temp.gauche = null;
-			}     
-        }
-        if(z.gauche==null && z.droit != null){
-			Noeud Temp = z.pere;
-			boolean compareResult = cmp.compare(Temp.cle, z.cle) < 0;
-
-			if (compareResult) {
-				Temp.droit = z.droit;
-			} else {
-				Temp.gauche = z.droit;
-			}            }
-        if(z.gauche!=null && z.droit == null){
-            Noeud Temp = z.pere;
-			boolean compareResult = cmp.compare(Temp.cle, z.cle) < 0;
-
-			if (compareResult) {
-				Temp.droit = z.gauche;
-			} else {
-				Temp.gauche = z.gauche;
-			}      
-        }
-        else if(z.gauche!=null && z.droit != null){
-            Noeud min = z.suivant();
-			E cle = z.suivant().cle;
-			supprimer(min);
-			z.cle=cle;
-        }
-		return z.suivant();
+		
+		if (y != z) 
+			z.cle = y.cle;
+		
+		return y.suivant();
 	}
-
 	/**
 	 * Les itérateurs doivent parcourir les éléments dans l'ordre ! Ceci peut se
 	 * faire facilement en utilisant {@link Noeud#minimum()} et
@@ -371,20 +324,18 @@ public class ABR<E> extends AbstractCollection<E> {
         // Create an ABR using the collection
         ABR<Integer> abr = new ABR<>(collection);
 
-        System.out.println(abr.toString());
-        // ABR<Integer>.Noeud test = abr.new Noeud(5);
-        // abr.supprimer(test);
-       // System.out.println(abr.racine.minimum().cle.toString());
+        //System.out.println(abr.toString());
+        ABR<Integer>.Noeud test = abr.new Noeud(3);
+    	 abr.supprimer(test);
+       System.out.println(abr.toString());
 		Iterator<Integer> iterator = abr.new ABRIterator();
-		// Use the iterator to iterate through the elements
-			iterator.next();
-			iterator.remove();
-		
-		
+
 		while (iterator.hasNext()) {
 			Integer element = iterator.next();
 			System.out.println(element);
+			iterator.remove();
 		}
+		System.out.println(abr.toString());
 		
     }
 }
